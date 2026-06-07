@@ -11,9 +11,12 @@ A fullscreen Chrome New Tab extension that replaces the default new tab page wit
 | Framework | React 19 |
 | Build tool | Vite 7 |
 | Styling | TailwindCSS v4 (CSS-first, no config file) |
+| Class utilities | `clsx` + `tailwind-merge` (via `cn()` helper) |
 | Language | TypeScript 5.9 (strict) |
 | Extension API | Chrome Manifest V3 |
 | Compiler | React Compiler via `babel-plugin-react-compiler` |
+| Linting | ESLint 9 + typescript-eslint |
+| Formatting | Prettier + `prettier-plugin-tailwindcss` + `@ianvs/prettier-plugin-sort-imports` |
 
 ---
 
@@ -34,6 +37,14 @@ For development with hot-reload (no extension context, uses `localStorage` fallb
 
 ```bash
 npm run dev
+```
+
+Other scripts:
+
+```bash
+npm run lint           # ESLint
+npm run format         # Prettier (write)
+npm run format:check   # Prettier (check only)
 ```
 
 ---
@@ -60,6 +71,9 @@ mortality/
 │   ├── index.css                   # TailwindCSS import + flip clock keyframes + base styles
 │   ├── types.ts                    # All shared TypeScript types
 │   │
+│   ├── constants/
+│   │   └── clock.ts                # Flip digit dimensions (W, H, FS, HALF, INNER_GAP, UNIT_PAD)
+│   │
 │   ├── context/
 │   │   └── settings-context.tsx    # Global settings state + chrome.storage bridge
 │   │
@@ -69,11 +83,14 @@ mortality/
 │   │
 │   ├── utils/
 │   │   ├── date-utils.ts           # getTimeDiff(), pad(), parseDateInTimezone()
-│   │   └── backgrounds.ts          # BUILTIN_BACKGROUNDS list + randomBuiltinIndex()
+│   │   ├── backgrounds.ts          # BUILTIN_BACKGROUNDS list + randomBuiltinIndex()
+│   │   └── tailwind-merge.ts       # cn() — clsx + twMerge helper
 │   │
 │   └── components/
-│       ├── background-layer.tsx    # Full-screen background image + overlay
-│       ├── flip-clock.tsx          # Custom CSS 3D flip animation (all 6 units)
+│       ├── background-layer.tsx    # Full-screen background image + colour overlay
+│       ├── flip-clock.tsx          # Lays out 6 FlipUnit columns with divider lines
+│       ├── flip-unit.tsx           # Two FlipDigit tiles + label for one time unit
+│       ├── flip-digit.tsx          # Single digit tile with CSS 3D fold/unfold animation
 │       ├── timer-display.tsx       # Assembles clock + stat cards + date label
 │       ├── settings-drawer.tsx     # Slide-in settings panel
 │       └── stat-card.tsx           # Individual glass stat card
@@ -124,15 +141,20 @@ useSettings() hook → consumed by any component
 
 ### Flip Clock
 
-`flip-clock.tsx` is self-contained with no external libraries. Each digit is a `FlipDigit` component that renders three layers:
+The flip clock is split across three components:
 
-1. **Base card** — always visible, shows the current digit
-2. **Upper fold** — shows the *previous* digit's top half, clipped with `clipPath: inset(0 0 52px 0 round 12px 12px 0 0)`, animates `rotateX(0deg → -90deg)` via `@keyframes flipFold`
-3. **Lower unfold** — shows the *current* digit's bottom half, clipped with `clipPath: inset(52px 0 0 0 round 0 0 12px 12px)`, animates `rotateX(90deg → 0deg)` via `@keyframes flipUnfold`
+- **`flip-clock.tsx`** — maps `TimeComponents` to 6 `FlipUnit` columns, rendering a 1px divider line between each.
+- **`flip-unit.tsx`** — renders two `FlipDigit` tiles side-by-side (tens + units) and the label below (e.g. "Hours").
+- **`flip-digit.tsx`** — animates a single digit. Renders three layers:
+  1. **Base card** — always visible, shows the current digit
+  2. **Upper fold** — shows the *previous* digit's top half, clipped with `clipPath: inset(0 0 52px 0 round 12px 12px 0 0)`, animates `rotateX(0deg → -90deg)` via `@keyframes flipFold`
+  3. **Lower unfold** — shows the *current* digit's bottom half, clipped with `clipPath: inset(52px 0 0 0 round 0 0 12px 12px)`, animates `rotateX(90deg → 0deg)` via `@keyframes flipUnfold`
 
 The previous value is tracked with a `useRef` to avoid triggering the animation on re-renders where the digit hasn't changed. The animation duration is 360 ms; the flipping flag resets via `setTimeout(380)`.
 
-The keyframes live in `src/index.css` (not inline) because CSS `animation:` property referencing a named keyframe requires it to be in a stylesheet.
+Digit dimensions (`W`, `H`, `FS`, `HALF`, `INNER_GAP`, `UNIT_PAD`) are centralised in `src/constants/clock.ts` and shared across all three components.
+
+The keyframes live in `src/index.css` (not inline) because CSS `animation:` referencing a named keyframe requires it to be in a stylesheet.
 
 ---
 
@@ -149,7 +171,7 @@ interface AppSettings {
   backgroundType: "builtin" | "url" | "local";
   backgroundUrl: string;       // used when backgroundType === "url"
   builtinIndex: number;        // index into BUILTIN_BACKGROUNDS[]
-  theme: "dark" | "amoled" | "ocean" | "sunset";
+  theme: "dark" | "forest" | "ocean" | "sunset";
   showStats: boolean;
   blurIntensity: number;       // 0–20 px
   overlayOpacity: number;      // 0–80 %
@@ -176,7 +198,7 @@ interface TimeComponents {
 | **Target Date / Start Date** | Date picker |
 | **Timezone** | `<select>` of 22 IANA timezones; auto-detects browser timezone on first install; label shows current UTC offset (e.g. `GMT+5:30 — Kolkata`) |
 | **Background** | Three tabs: **Wallpapers** (3×N thumbnail grid + Random button), **URL** (text input + Clear), **Upload** (file picker + Clear) |
-| **Theme** | Dark / AMOLED / Ocean / Sunset — controls the colour tint of the overlay |
+| **Theme** | Dark / Forest / Ocean / Sunset — controls the colour tint of the overlay |
 | **Visual Options** | Show Statistics toggle, Background Blur slider (0–20px), Overlay Opacity slider (0–80%) |
 
 Keyboard shortcuts: `S` opens settings, `Escape` closes.
@@ -215,6 +237,9 @@ Enabled globally. It automatically inserts memoisation (equivalent to `useMemo` 
 
 **Stale-closure guard in `updateSettings`**
 `useCallback` captures `saveSettings` but not `settings`. If `settings` were captured directly, calling `updateSettings` in a `useEffect` or event handler would use stale settings. Instead, `settingsRef.current = settings` is set on every render, and `updateSettings` reads `settingsRef.current`, which is always current.
+
+**`cn()` for conditional classNames**
+`src/utils/tailwind-merge.ts` exports `cn(...inputs)` — a thin wrapper over `clsx` + `twMerge`. Used wherever a className is built from conditional segments (e.g. active/inactive button states) so Tailwind class conflicts are resolved correctly.
 
 ---
 
