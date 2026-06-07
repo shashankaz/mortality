@@ -3,6 +3,7 @@ import { useMemo, useRef, type ChangeEvent } from "react";
 import { useSettings } from "../context/settings-context";
 import type { BackgroundType, Theme, TimerMode } from "../types";
 import { BUILTIN_BACKGROUNDS, randomBuiltinIndex } from "../utils/backgrounds";
+import { cn } from "../utils/tailwind-merge";
 
 const TIMEZONES = [
   "Pacific/Honolulu",
@@ -126,16 +127,18 @@ export const SettingsDrawer = ({ open, onClose }: Props) => {
   return (
     <>
       <div
-        className={`fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${
-          open ? "opacity-100" : "pointer-events-none opacity-0"
-        }`}
+        className={cn(
+          "fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity duration-300",
+          open ? "opacity-100" : "pointer-events-none opacity-0",
+        )}
         onClick={onClose}
       />
 
       <aside
-        className={`fixed top-0 right-0 z-50 flex h-full w-80 flex-col border-l border-white/10 bg-neutral-950/95 shadow-[−8px_0_40px_rgba(0,0,0,0.6)] backdrop-blur-2xl transition-transform duration-300 ease-in-out will-change-transform sm:w-96 ${
-          open ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={cn(
+          "fixed top-0 right-0 z-50 flex h-full w-80 flex-col border-l border-white/10 bg-neutral-950/95 shadow-[−8px_0_40px_rgba(0,0,0,0.6)] backdrop-blur-2xl transition-transform duration-300 ease-in-out will-change-transform sm:w-96",
+          open ? "translate-x-0" : "translate-x-full",
+        )}
         aria-hidden={!open}
       >
         <div className="flex shrink-0 items-center justify-between border-b border-white/10 px-6 py-5">
@@ -171,11 +174,12 @@ export const SettingsDrawer = ({ open, onClose }: Props) => {
                 <button
                   key={m}
                   onClick={() => updateSettings({ mode: m })}
-                  className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium capitalize transition-all duration-150 ${
+                  className={cn(
+                    "flex-1 rounded-lg px-3 py-2 text-sm font-medium capitalize transition-all duration-150",
                     settings.mode === m
                       ? "bg-white text-black"
-                      : "border border-white/10 bg-white/8 text-white/50 hover:bg-white/15 hover:text-white"
-                  }`}
+                      : "border border-white/10 bg-white/8 text-white/50 hover:bg-white/15 hover:text-white",
+                  )}
                 >
                   {m}
                 </button>
@@ -236,11 +240,12 @@ export const SettingsDrawer = ({ open, onClose }: Props) => {
                 <button
                   key={tab.value}
                   onClick={() => updateSettings({ backgroundType: tab.value })}
-                  className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-medium transition-all duration-150 ${
+                  className={cn(
+                    "flex-1 rounded-lg px-2 py-1.5 text-xs font-medium transition-all duration-150",
                     activeTab === tab.value
                       ? "bg-white text-black"
-                      : "border border-white/10 bg-white/8 text-white/50 hover:bg-white/15 hover:text-white"
-                  }`}
+                      : "border border-white/10 bg-white/8 text-white/50 hover:bg-white/15 hover:text-white",
+                  )}
                 >
                   {tab.label}
                 </button>
@@ -259,12 +264,13 @@ export const SettingsDrawer = ({ open, onClose }: Props) => {
                           builtinIndex: i,
                         })
                       }
-                      className={`relative overflow-hidden rounded-lg transition-all duration-150 ${
+                      className={cn(
+                        "relative overflow-hidden rounded-lg transition-all duration-150",
                         settings.backgroundType === "builtin" &&
-                        settings.builtinIndex === i
+                          settings.builtinIndex === i
                           ? "scale-[1.03] ring-2 ring-white/80"
-                          : "ring-1 ring-white/15 hover:ring-white/40"
-                      }`}
+                          : "ring-1 ring-white/15 hover:ring-white/40",
+                      )}
                       title={bg.name}
                     >
                       <img
@@ -344,11 +350,12 @@ export const SettingsDrawer = ({ open, onClose }: Props) => {
                 <button
                   key={t.value}
                   onClick={() => updateSettings({ theme: t.value })}
-                  className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
+                  className={cn(
+                    "flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150",
                     settings.theme === t.value
                       ? "border border-white/30 bg-white/15 text-white"
-                      : "border border-transparent bg-white/5 text-white/50 hover:bg-white/10 hover:text-white"
-                  }`}
+                      : "border border-transparent bg-white/5 text-white/50 hover:bg-white/10 hover:text-white",
+                  )}
                 >
                   <span
                     className={`h-3.5 w-3.5 rounded-full ${t.swatch} shrink-0 ring-1 ring-white/25`}
@@ -370,16 +377,18 @@ export const SettingsDrawer = ({ open, onClose }: Props) => {
                   onClick={() =>
                     updateSettings({ showStats: !settings.showStats })
                   }
-                  className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-200 focus:outline-none ${
-                    settings.showStats ? "bg-white" : "bg-white/20"
-                  }`}
+                  className={cn(
+                    "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-200 focus:outline-none",
+                    settings.showStats ? "bg-white" : "bg-white/20",
+                  )}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full shadow transition-transform duration-200 ${
+                    className={cn(
+                      "inline-block h-4 w-4 transform rounded-full shadow transition-transform duration-200",
                       settings.showStats
                         ? "translate-x-6 bg-black"
-                        : "translate-x-1 bg-white/50"
-                    }`}
+                        : "translate-x-1 bg-white/50",
+                    )}
                   />
                 </button>
               </div>
