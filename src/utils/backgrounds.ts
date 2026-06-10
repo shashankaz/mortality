@@ -10,12 +10,30 @@ export const BUILTIN_BACKGROUNDS: BuiltinBackground[] = [
   { path: "./backgrounds/bg-forest.svg", name: "Forest" },
   { path: "./backgrounds/bg-cosmic.svg", name: "Cosmic" },
   { path: "./backgrounds/bg-rose.svg", name: "Rose" },
-  { path: "./backgrounds/sample-1.jpg", name: "Photo I" },
-  { path: "./backgrounds/sample-2.jpg", name: "Photo II" },
-  { path: "./backgrounds/sample-3.jpg", name: "Photo III" },
-  { path: "./backgrounds/sample-4.jpg", name: "Photo IV" },
-  { path: "./backgrounds/sample-5.jpg", name: "Photo V" },
-  { path: "./backgrounds/sample-6.jpg", name: "Photo VI" },
+  {
+    path: "https://pub-52fdce0af0e2435aaa7c6848519494df.r2.dev/sample-1.jpg",
+    name: "Photo I",
+  },
+  {
+    path: "https://pub-52fdce0af0e2435aaa7c6848519494df.r2.dev/sample-2.jpg",
+    name: "Photo II",
+  },
+  {
+    path: "https://pub-52fdce0af0e2435aaa7c6848519494df.r2.dev/sample-3.jpg",
+    name: "Photo III",
+  },
+  {
+    path: "https://pub-52fdce0af0e2435aaa7c6848519494df.r2.dev/sample-4.jpg",
+    name: "Photo IV",
+  },
+  {
+    path: "https://pub-52fdce0af0e2435aaa7c6848519494df.r2.dev/sample-5.jpg",
+    name: "Photo V",
+  },
+  {
+    path: "https://pub-52fdce0af0e2435aaa7c6848519494df.r2.dev/sample-6.jpg",
+    name: "Photo VI",
+  },
 ];
 
 export const randomBuiltinIndex = (): number => {
